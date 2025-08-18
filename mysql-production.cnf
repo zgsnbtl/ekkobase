@@ -1,4 +1,6 @@
 [mysqld]
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
 port = 3306
 datadir = /var/lib/mysql
 socket = /var/lib/mysql/mysql.sock
