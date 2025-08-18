@@ -92,14 +92,33 @@ init() {
     
     # 检查并创建环境变量文件
     if [[ ! -f .env ]]; then
-        if [[ -f "$ENV_FILE" ]]; then
-            echo -e "${YELLOW}复制环境变量配置...${NC}"
-            cp "$ENV_FILE" .env
-            echo -e "${YELLOW}⚠️  请编辑 .env 文件，修改默认的密码和密钥！${NC}"
-        else
-            echo -e "${RED}❌ 未找到 $ENV_FILE 文件${NC}"
-            exit 1
-        fi
+        echo -e "${YELLOW}创建生产环境变量...${NC}"
+        # 使用生产环境配置，避免空格问题
+        cat > .env << EOF
+# NocoBase 生产环境配置
+APP_KEY=your-secure-key-$(date +%s)
+APP_PORT=13000
+NODE_ENV=production
+
+# 数据库配置
+DB_DIALECT=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=nocobase
+DB_USER=nocobase
+DB_PASSWORD=nocobase_$(date +%s)
+
+# MySQL root密码
+MYSQL_ROOT_PASSWORD=root_$(date +%s)
+
+# 初始化配置
+INIT_LANG=zh-CN
+INIT_ROOT_EMAIL=admin@localhost.com
+INIT_ROOT_PASSWORD=admin123456
+INIT_ROOT_NICKNAME=SuperAdmin
+INIT_ROOT_USERNAME=admin
+EOF
+        echo -e "${YELLOW}⚠️  请编辑 .env 文件，修改默认的密码和密钥！${NC}"
     else
         echo -e "${GREEN}✅ 环境变量文件已存在${NC}"
     fi
