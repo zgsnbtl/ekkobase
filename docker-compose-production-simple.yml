@@ -59,35 +59,27 @@ services:
 
   # 如果使用已有数据库服务，可以不启动 mysql
   mysql:
-    image: mysql:8
+    image: mysql:8.4.6
+    container_name: ekkobase-mysql-1
+    restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-nocobase}
-      MYSQL_USER: ${DB_USER:-nocobase}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-nocobase_secure_password}
-      # MySQL root 用户的密码。若环境变量 MYSQL_ROOT_PASSWORD 未设置，则默认使用 'root_secure_password'。
-      # 建议在生产环境中设置该环境变量，以保证数据库的安全性。
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secure_password}
-      # MySQL性能优化
-      MYSQL_ROOT_HOST: '%'
-      MYSQL_INITDB_SKIP_TZINFO: 1
-    restart: always
+      - MYSQL_DATABASE=${DB_DATABASE:-nocobase}
+      - MYSQL_USER=${DB_USER:-nocobase}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-nocobase}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-nocobase}
+      - TZ=${TZ:-Asia/Shanghai}
     volumes:
-      - ./storage/db/mysql:/var/lib/mysql
-      - ./mysql-production.cnf:/etc/mysql/conf.d/mysql-production.cnf:ro
-    networks:
-      - nocobase
+      - mysql_data:/var/lib/mysql
+      - ./mysql-production.cnf:/etc/mysql/conf.d/mysql.cnf:ro
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    command: --default-authentication-plugin=mysql_native_password --skip-log-bin --skip-log-error
     healthcheck:
-      test: ["CMD-SHELL", "mysql -u root -p${MYSQL_ROOT_PASSWORD:-root_secure_password} -e 'SELECT 1' || mysql -u root -e 'SELECT 1'"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-nocobase} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
       start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 1G
 
   redis:
     image: redis:7-alpine
