@@ -73,7 +73,7 @@ services:
       - ./mysql-production.cnf:/etc/mysql/conf.d/mysql.cnf:ro
     ports:
       - "${DB_PORT:-3306}:3306"
-    command: --default-authentication-plugin=mysql_native_password --skip-log-bin --skip-log-error
+    command: --default-authentication-plugin=mysql_native_password --log-error=/var/lib/mysql/mysql-error.log
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-nocobase} --silent"]
       interval: 10s
