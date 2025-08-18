@@ -62,6 +62,9 @@ services:
     image: mysql:8
     container_name: ekkobase-mysql-1
     restart: unless-stopped
+    # 新增：加入 nocobase 网络
+    networks:
+      - nocobase
     environment:
       - MYSQL_DATABASE=${DB_DATABASE:-nocobase}
       - MYSQL_USER=${DB_USER:-nocobase}
@@ -74,12 +77,12 @@ services:
     ports:
       - "${DB_PORT:-3306}:3306"
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-nocobase} --silent"]
+      # 修正健康检查命令（用单引号包裹密码，避免特殊字符问题）
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p'${MYSQL_ROOT_PASSWORD:-nocobase}' --silent"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 60s
-
+      start_period: 60s  # 延长启动宽限期，给 MySQL 足够初始化时间
   redis:
     image: redis:7-alpine
     restart: always
