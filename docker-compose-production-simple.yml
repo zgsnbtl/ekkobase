@@ -1,4 +1,5 @@
-version: '3.8'
+# Docker Compose 配置
+# 注意：version 字段已废弃，但保留以确保兼容性
 
 networks:
   nocobase:
@@ -58,11 +59,13 @@ services:
 
   # 如果使用已有数据库服务，可以不启动 mysql
   mysql:
-    image: registry.cn-shanghai.aliyuncs.com/nocobase/mysql:8
+    image: mysql:8
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-nocobase}
       MYSQL_USER: ${DB_USER:-nocobase}
       MYSQL_PASSWORD: ${DB_PASSWORD:-nocobase_secure_password}
+      # MySQL root 用户的密码。若环境变量 MYSQL_ROOT_PASSWORD 未设置，则默认使用 'root_secure_password'。
+      # 建议在生产环境中设置该环境变量，以保证数据库的安全性。
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secure_password}
       # MySQL性能优化
       MYSQL_ROOT_HOST: '%'
@@ -70,15 +73,15 @@ services:
     restart: always
     volumes:
       - ./storage/db/mysql:/var/lib/mysql
-      - ./mysql-production.cnf:/etc/mysql/conf.d/mysql-production.cnf
+      - ./mysql-production.cnf:/etc/mysql/conf.d/mysql-production.cnf:ro
     networks:
       - nocobase
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secure_password"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      test: ["CMD-SHELL", "mysql -u root -p${MYSQL_ROOT_PASSWORD:-root_secure_password} -e 'SELECT 1' || mysql -u root -e 'SELECT 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     deploy:
       resources:
         limits:
