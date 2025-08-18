@@ -1,4 +1,4 @@
-FROM node:20-bookworm as builder
+FROM node:20-slim as builder
 ARG VERDACCIO_URL=http://host.docker.internal:10104/
 ARG COMMIT_HASH
 ARG APPEND_PRESET_LOCAL_PLUGINS
