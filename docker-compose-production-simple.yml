@@ -100,3 +100,7 @@ services:
           memory: 512M
         reservations:
           memory: 256M
+
+volumes:
+  mysql_data:
+    driver: local
