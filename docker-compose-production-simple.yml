@@ -77,12 +77,12 @@ services:
     ports:
       - "${DB_PORT:-3306}:3306"
     healthcheck:
-      # 修正健康检查命令（用单引号包裹密码，避免特殊字符问题）
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p'${MYSQL_ROOT_PASSWORD:-nocobase}' --silent"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 60s  # 延长启动宽限期，给 MySQL 足够初始化时间
+      # 简化健康检查 - 使用TCP连接测试
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-P", "3306", "--silent"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s  # 给MySQL充分的初始化时间
   redis:
     image: redis:7-alpine
     restart: always
